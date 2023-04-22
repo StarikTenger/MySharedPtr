@@ -81,7 +81,7 @@ public:
 		reset();
 	}
 
-	// For debug
+	// Number of active references
 	unsigned int number_of_refs() {
 		if (ref_count)
 			return *ref_count;
@@ -108,14 +108,14 @@ public:
 		ref_count = nullptr;
 	}
 
+	// Reset to new ptr
 	void reset(T* _ptr) {
 		reset();
 		*this = smart_ptr(_ptr);
 	}
 
+	// TODO:
 	// Swap
-	
-
 	// Make shared
 
 };
