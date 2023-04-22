@@ -9,7 +9,6 @@ private:
 	T* ptr = nullptr;
 	unsigned int* ref_count = nullptr;
 	bool null_checked = false;
-
 public:
 	// Default constructor
 	smart_ptr() : ptr(nullptr), ref_count(new unsigned int(0)) {}
@@ -46,8 +45,7 @@ public:
 	smart_ptr(smart_ptr&& other) {
 		ptr = other.ptr;
 		ref_count = other.ref_count;
-		other.ptr = nullptr;
-		other.ref_count = nullptr;
+		other.reset();
 	}
 
 	// Move assignment
@@ -58,25 +56,29 @@ public:
 		if (ptr) {
 			(*ref_count)++;
 		}
+		other.reset();
 		return *this;
 	}
 
 	// Dereferencing
 	T& operator*() {
+		if (!null_checked) {
+ 			cerr << "Warning: pointer is used without checking on null\n";
+		}
 		return *ptr;
+	}
+
+	// ->
+	T* operator->() {
+		if (!null_checked) {
+			cerr << "Warning: pointer is used without checking on null\n";
+		}
+		return ptr;
 	}
 
 	// Destructor
 	~smart_ptr() {
-		(*ref_count)--;
-		if (*ref_count == 0) {
-			if (ptr) {
-				delete ptr;
-				ptr = nullptr;
-			}
-			delete ref_count;
-			ref_count = nullptr;
-		}
+		reset();
 	}
 
 	// For debug
@@ -91,31 +93,62 @@ public:
 		null_checked = true;
 		return ptr != nullptr;
 	}
+
+	// Reset
+	void reset() {
+		if (ptr) {
+			(*ref_count)--;
+			if (*ref_count == 0) {
+				delete ptr;
+				delete ref_count;
+				cout << "end";
+			}
+		}
+		ptr = nullptr;
+		ref_count = nullptr;
+	}
+
+	void reset(T* _ptr) {
+		reset();
+		*this = smart_ptr(_ptr);
+	}
+
+	// Swap
+	
+
+	// Make shared
+
 };
 
 void foo(smart_ptr<int> x) {
-	(*x) = 0;
+	if (x)
+		(*x) = 0;
 }
 
 int main() {
 	auto x = new int(5);
 	auto y = new int(7);
 	smart_ptr<int> xp(x);
-	foo(xp); // warning here
+  	foo(xp); // warning here
 	if (xp) {
 		foo(xp);
 	}
 	xp = smart_ptr<int>(y);
+	if (xp)
+		cout << *xp << "\n";
 	if (xp) {
 		auto xp1 = xp;
 		auto xp2(xp);
 		xp2 = xp1;
-		cout << xp.number_of_refs() << "\n";
+		cout << xp1.number_of_refs() << "\n";
 	}
 	cout << *x << " x\n";
 	if (xp)
 		foo(xp);
 	cout << *x << " x\n";
 	cout << xp.number_of_refs() << "\n";
+	auto z = new pair<int, int>({1, 2});
+	if (z)
+		cout << z->first << " " << z->second << "\n";
 	cout << "success\n";
 }
