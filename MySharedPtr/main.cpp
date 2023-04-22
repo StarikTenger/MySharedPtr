@@ -55,7 +55,9 @@ public:
 		ptr = other.ptr;
 		ref_count = other.ref_count;
 		null_checked = other.null_checked;
-		(*ref_count)++;
+		if (ptr) {
+			(*ref_count)++;
+		}
 		return *this;
 	}
 
